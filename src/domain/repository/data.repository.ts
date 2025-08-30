@@ -1,3 +1,5 @@
-export interface DataRepository<T> {
-  load(data: T | T[]): Promise<void>;
+import { DataEntity } from '../data.entity';
+
+export interface DataRepository {
+  save(data: DataEntity | DataEntity[]): Promise<void>;
 }
