@@ -1,12 +1,12 @@
-const fs = require("fs");
-const path = require("path");
-const dayjs = require("dayjs");
+const fs = require('fs');
+const path = require('path');
+const dayjs = require('dayjs');
 
-const LOG_FILE = path.join(__dirname, "winston.log");
-const LEVELS = ["info", "warn", "debug"];
+const LOG_FILE = path.join(__dirname, 'winston.log');
+const LEVELS = ['info', 'warn'];
 
 const TOTAL_DAYS = 30;
-const TARGET_LINES = 10000;
+const TARGET_LINES = 5000;
 
 const distributeLogs = (days, total) => {
   let remaining = total;
@@ -28,29 +28,31 @@ const perDayCounts = distributeLogs(TOTAL_DAYS, TARGET_LINES);
 // 로그 라인 생성
 let globalIdx = 1;
 const genLogLine = (date, i) => {
+  const isInvalid = Math.random() < 0.005;
   const isError = Math.random() < 0.05;
-  const level = isError ? "error" : LEVELS[Math.floor(Math.random() * LEVELS.length)];
-  const msg = isError
-    ? `[ERROR] log-${globalIdx} failed to process`
-    : `[OK] log-${globalIdx} processed successfully`;
+  const level = isError ? 'error' : LEVELS[Math.floor(Math.random() * LEVELS.length)];
+  const msg = isError ? `[ERROR] log-${globalIdx} failed to process` : `[OK] log-${globalIdx} processed successfully`;
   const meta = {
     pid: 1000 + (i % 50),
     page: (i % 200) + 1,
   };
   if (isError) meta.errorId = `ERR${10000 + globalIdx}`;
   globalIdx++;
+  if (isInvalid) {
+    return `${date} :.- ${level}: ${msg} ${JSON.stringify(meta)}`;
+  }
   return `${date} ${level}: ${msg} ${JSON.stringify(meta)}`;
 };
 
 // 로그 전체 생성
 const lines = [];
 perDayCounts.forEach((count, offset) => {
-  const date = dayjs().subtract(TOTAL_DAYS - offset, "day").format("YYYYMMDD");
+  const date = dayjs()
+    .subtract(TOTAL_DAYS - offset, 'day')
+    .format('YYYYMMDD');
   for (let i = 0; i < count; i++) {
     lines.push(genLogLine(date, i));
   }
 });
 
-// 파일 저장
-fs.writeFileSync(LOG_FILE, lines.join("\n"), "utf-8");
-console.log("Per-day distribution:", perDayCounts);
+fs.writeFileSync(LOG_FILE, lines.join('\n'), 'utf-8');
