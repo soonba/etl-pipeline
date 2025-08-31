@@ -1,7 +1,9 @@
+import { LogLevel } from './vo/log-level';
+
 export class DataEntity {
   source: string;
-  level: 'info' | 'warn' | 'error';
+  level: LogLevel;
   message: string;
-  timestamp: Date;
+  timestamp?: Date | null;
   errorId?: string | null;
 }

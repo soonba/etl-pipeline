@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { Api3010Port } from './apis/api-3010-port';
 import { Api3011Port } from './apis/api-3011-port';
-import { WinstonLoggerSource } from './files/winston-logger-source';
+import { WinstonLoggerSource } from './log-files/winston-logger-source';
 
 export const DATA_SOURCES = Symbol('DATA_SOURCES');
 export const REACTIVE_DATA_SOURCES = Symbol('DATA_SOURCES');
