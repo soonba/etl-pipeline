@@ -1,15 +1,15 @@
 import { Injectable } from '@nestjs/common';
-import { ReactiveDataSource } from '../../reactive-data-source';
+import { DataSource } from '../../data-source';
 import { DataEntity } from '../../../../domain/data.entity';
-import { catchError, delay, EMPTY, from, Observable } from 'rxjs';
+import { catchError, delay, EMPTY, finalize, from, Observable } from 'rxjs';
 import axios from 'axios';
-import { Api3011Response } from './api3011.response';
+import { Api3011Response } from './api-3011.response';
 import { mergeMap } from 'rxjs/operators';
 import { getDelayInMs } from '../rate-limit.util';
 import { mapToEntity } from './map-to-entity';
 
 @Injectable()
-export class Api3011Port implements ReactiveDataSource {
+export class Api3011Port implements DataSource {
   private readonly BASE_URL = 'http://localhost:3011';
   private readonly MAXIMUM_REQUEST_PER_SECOND = 1;
 
@@ -32,6 +32,7 @@ export class Api3011Port implements ReactiveDataSource {
         console.log(`페이지 ${this.lastPage} fetch 에러`, err);
         return EMPTY;
       }),
+      finalize(() => {}),
     );
   }
 }

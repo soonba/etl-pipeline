@@ -1,4 +1,4 @@
-import { WinstonLoggerType } from '../types';
+import { WinstonLoggerType } from './winston-logger.type';
 
 export const parseLogLine = (raw: string): WinstonLoggerType => {
   const regex = /^(\d{8})\s+(info|warn|error):\s+(.*?)\s+(\{.*})$/;

@@ -1,5 +1,5 @@
 import { DataEntity } from '../../../domain/data.entity';
-import { ReactiveDataSource } from '../reactive-data-source';
+import { DataSource } from '../data-source';
 import { Observable } from 'rxjs';
 import * as fs from 'fs';
 import * as path from 'node:path';
@@ -7,7 +7,7 @@ import * as split2 from 'split2';
 import { parseLogLine } from './parse-log-line';
 import { mapToEntity } from './map-to-entity';
 
-export class WinstonLoggerSource implements ReactiveDataSource {
+export class WinstonLoggerSource implements DataSource {
   //todo: 확장시 별도 db로 분리
   private lastOffset = 0;
 

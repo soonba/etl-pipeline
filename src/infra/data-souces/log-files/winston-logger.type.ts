@@ -1,5 +1,3 @@
-export interface Api3010Type {}
-export interface Api3011Type {}
 export interface WinstonLoggerType {
   raw: string; // 원본
   date?: string; // YYYYMMDD

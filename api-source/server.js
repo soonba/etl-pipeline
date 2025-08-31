@@ -3,22 +3,12 @@ const dayjs = require('dayjs');
 const PAGE_SIZE = 20;
 const MAX_LOGS = 1000;
 
-const formatFn = (port) => {
-  if (port === 3010) {
-    return (isError, idx) => ({
-      timestamp: dayjs().toDate(),
-      level: isError ? 'error' : 'info',
-      message: `[${isError ? 'ERROR' : 'OK'}] (server:${port}) log-${idx}`,
-    });
-  } else {
-    return (isError, idx) => ({
-      date: dayjs().format('YY-MM-DD HH:mm:SS'),
-      status: isError ? 'FAIL' : 'SUCCESS',
-      node: `node-${port}`,
-      detail: isError ? `log-${idx} failed to process` : `log-${idx} processed successfully`,
-    });
-  }
-};
+const formatFn = (port) => (isError, idx) => ({
+  date: dayjs().format('YY-MM-DD HH:mm:SS'),
+  status: isError ? 'FAIL' : 'SUCCESS',
+  node: `node-${port}`,
+  detail: isError ? `log-${idx} failed to process` : `log-${idx} processed successfully`,
+});
 
 const startServer = (port) => {
   const logs = [];
@@ -59,5 +49,4 @@ const startServer = (port) => {
   });
 };
 
-startServer(3010);
 startServer(3011);

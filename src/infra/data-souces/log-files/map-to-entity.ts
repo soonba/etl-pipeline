@@ -1,8 +1,8 @@
-import { WinstonLoggerType } from '../types';
 import { DataEntity } from '../../../domain/data.entity';
 import * as dayjs from 'dayjs';
 
 import { LogLevel } from 'src/domain/vo/log-level';
+import { WinstonLoggerType } from './winston-logger.type';
 
 const winstonToLogLevelMap: Record<string, LogLevel> = {
   info: LogLevel.INFO,
