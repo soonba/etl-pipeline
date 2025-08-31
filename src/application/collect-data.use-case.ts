@@ -6,7 +6,7 @@ import { DATA_SOURCES, REACTIVE_DATA_SOURCES } from '../infra/data-souces/data-s
 import { DataSource } from '../infra/data-souces/data-source';
 import { ReactiveDataSource } from '../infra/data-souces/reactive-data-source';
 import { LOGGER } from '../infra/logger/logger.module';
-import { BatchLogger } from '../infra/logger/batchLogger';
+import { BatchLogger } from '../infra/logger/batch-logger';
 
 @Injectable()
 export class CollectDataUseCase {

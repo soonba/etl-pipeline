@@ -13,6 +13,7 @@ export class PipelineFacade {
   ) {}
 
   async runPipeline(): Promise<void> {
+    //todo 파이프라인이 아직 종료되지 않았을 때 제어
     return new Promise((resolve, reject) => {
       this.collectUseCase
         .collect$()
@@ -21,11 +22,8 @@ export class PipelineFacade {
           mergeMap((bufferedRaw) => this.dataRepository.save(bufferedRaw)),
         )
         .subscribe({
-          next: (data) => {
-            console.log('적재성공', data);
-          },
-          error: (err: Error) => reject(err),
           complete: () => resolve(),
+          error: (err: Error) => reject(err),
         });
     });
   }
