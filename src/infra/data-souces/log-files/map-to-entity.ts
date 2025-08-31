@@ -1,7 +1,18 @@
 import { WinstonLoggerType } from '../types';
 import { DataEntity } from '../../../domain/data.entity';
-import { mapWinstonLogLevel } from './map-to-log-level';
 import * as dayjs from 'dayjs';
+
+import { LogLevel } from 'src/domain/vo/log-level';
+
+const winstonToLogLevelMap: Record<string, LogLevel> = {
+  info: LogLevel.INFO,
+  warn: LogLevel.WARN,
+  error: LogLevel.ERROR,
+};
+
+export const mapWinstonLogLevel = (level: string): LogLevel => {
+  return winstonToLogLevelMap[level] ?? LogLevel.INVALID_DATA;
+};
 
 export const mapToEntity = (winstonLogger: WinstonLoggerType): DataEntity => {
   const { raw, date, level, message, payload } = winstonLogger;

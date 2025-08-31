@@ -1,22 +1,18 @@
 const express = require('express');
-const fs = require('fs');
-const path = require('path');
 const dayjs = require('dayjs');
 const PAGE_SIZE = 20;
 const MAX_LOGS = 1000;
-const LOG_FILE = path.join(__dirname, 'winston.log');
 
-// ===== 서버별 포맷터 =====
 const formatFn = (port) => {
   if (port === 3010) {
     return (isError, idx) => ({
-      timestamp: dayjs('YYYYMMDD'),
+      timestamp: dayjs().toDate(),
       level: isError ? 'error' : 'info',
       message: `[${isError ? 'ERROR' : 'OK'}] (server:${port}) log-${idx}`,
     });
   } else {
     return (isError, idx) => ({
-      date: dayjs().format('YY-MM-DD'),
+      date: dayjs().format('YY-MM-DD HH:mm:SS'),
       status: isError ? 'FAIL' : 'SUCCESS',
       node: `node-${port}`,
       detail: isError ? `log-${idx} failed to process` : `log-${idx} processed successfully`,
@@ -37,7 +33,7 @@ const startServer = (port) => {
     if (logs.length > MAX_LOGS) {
       logs.splice(0, logs.length - MAX_LOGS);
     }
-  }, 1000);
+  }, 20000);
 
   const app = express();
 
@@ -65,21 +61,3 @@ const startServer = (port) => {
 
 startServer(3010);
 startServer(3011);
-
-const PORTS = [3010, 3011];
-const LEVELS = ['info', 'warn', 'error', 'debug'];
-
-const genLogLine = (i) => {
-  const port = PORTS[i % 2];
-  const date = port === 3010 ? dayjs().format('YYYY-MM-DD') : dayjs().format('YYYYMMDD');
-  const isError = Math.random() < 0.05;
-  const level = isError ? 'error' : LEVELS[Math.floor(Math.random() * LEVELS.length)];
-  const idx = i + 1;
-  const msg = isError ? `[ERROR] (server:${port}) log-${idx} failed` : `[OK] (server:${port}) log-${idx} processed`;
-  return `${date} ${level}: ${msg} {"pid":${1000 + (idx % 50)},"page":${(idx % 200) + 1}}`;
-};
-
-// 파일 생성
-const lines = Array.from({ length: 10000 }, (_, i) => genLogLine(i));
-fs.writeFileSync(LOG_FILE, lines.join('\n'), 'utf-8');
-console.log(`Log file generated: ${LOG_FILE}`);

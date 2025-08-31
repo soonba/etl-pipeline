@@ -26,6 +26,7 @@
     "@nestjs/platform-express": "^11.0.1",
     "@nestjs/schedule": "^6.0.0",
     "@types/split2": "^4.2.3",
+    "axios": "^1.11.0",
     "dayjs": "^1.11.13",
     "express": "^5.1.0",
     "reflect-metadata": "^0.2.2",
