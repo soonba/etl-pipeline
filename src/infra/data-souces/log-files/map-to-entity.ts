@@ -17,7 +17,7 @@ export const mapWinstonLogLevel = (level: string): LogLevel => {
 export const mapToEntity = (winstonLogger: WinstonLoggerType): DataEntity => {
   const { raw, date, level, message, payload } = winstonLogger;
   return {
-    source: 'winston-logger',
+    key: 'winston-logger',
     level: mapWinstonLogLevel(level),
     message: raw + message,
     timestamp: date ? dayjs(date).toDate() : null,

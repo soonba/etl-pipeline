@@ -1,6 +1,7 @@
-import { Observable } from 'rxjs';
 import { DataEntity } from '../../domain/data.entity';
+import { Observable } from 'rxjs';
 
 export interface DataSource {
-  fetch$(): Observable<DataEntity>;
+  fetch$(lastPatched?: number): Observable<DataEntity>;
+  getKey(): string;
 }

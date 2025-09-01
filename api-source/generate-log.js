@@ -2,32 +2,24 @@ const fs = require('fs');
 const path = require('path');
 const dayjs = require('dayjs');
 
-const LOG_FILE = path.join(__dirname, 'winston.log');
+const OUT_DIR = path.join(__dirname, 'logs');
+if (!fs.existsSync(OUT_DIR)) fs.mkdirSync(OUT_DIR);
+
 const LEVELS = ['info', 'warn'];
-
-const TOTAL_DAYS = 30;
-const TARGET_LINES = 5000;
-
-const distributeLogs = (days, total) => {
-  let remaining = total;
-  const result = [];
-  for (let i = days; i > 0; i--) {
-    const avg = Math.floor(remaining / i);
-    const variance = Math.floor(avg * 0.3); // ±30% 변동
-    const count = Math.max(50, avg + Math.floor((Math.random() - 0.5) * variance * 2));
-    result.push(count);
-    remaining -= count;
-  }
-  result[result.length - 1] += remaining;
-  return result;
-};
-
-// 하루별 로그 개수 분배
-const perDayCounts = distributeLogs(TOTAL_DAYS, TARGET_LINES);
-
-// 로그 라인 생성
 let globalIdx = 1;
-const genLogLine = (date, i) => {
+
+// invalid 패턴 후보
+const INVALID_PATTERNS = [
+  (ts, level, msg, meta) => `${ts.format('YYYYMMDD HH:mm:ss')} ${level} ${msg} ${JSON.stringify(meta)}`,
+  (ts, level, msg, meta) => `${ts.format('YYYYMMDD-HHmmss')}::${level} ${msg} ${JSON.stringify(meta)}`,
+  (ts, level, msg, meta) => `${ts.format('YYYY/MM/DD HH-mm-ss')} ${level}: ${msg} ${JSON.stringify(meta)}`,
+  (ts, level, msg) => `${ts.format('YYYYMMDD HH:mm:ss')} ${level}: ${msg}`,
+  (ts, _level, msg, meta) => `${ts.format('YYYYMMDD HH:mm:ss')} ::: ${msg} ${JSON.stringify(meta)}`,
+  (ts, level, msg, meta) => `${ts.format('YYYYMMDD HH:mm:ss')} ${level}: ${msg} pid=${meta.pid} page=${meta.page}`,
+  (ts, level, msg, meta) => `${ts.format('YYYYMMDD HH:mm:ss')} :.- ${level}:: ${msg} ###${JSON.stringify(meta)}`,
+];
+
+const genLogLine = (ts, i) => {
   const isInvalid = Math.random() < 0.005;
   const isError = Math.random() < 0.05;
   const level = isError ? 'error' : LEVELS[Math.floor(Math.random() * LEVELS.length)];
@@ -38,21 +30,61 @@ const genLogLine = (date, i) => {
   };
   if (isError) meta.errorId = `ERR${10000 + globalIdx}`;
   globalIdx++;
+
   if (isInvalid) {
-    return `${date} :.- ${level}: ${msg} ${JSON.stringify(meta)}`;
+    const pattern = INVALID_PATTERNS[Math.floor(Math.random() * INVALID_PATTERNS.length)];
+    return pattern(ts, level, msg, meta);
   }
-  return `${date} ${level}: ${msg} ${JSON.stringify(meta)}`;
+
+  return `${ts.format('YYYYMMDD HH:mm:ss')} ${level}: ${msg} ${JSON.stringify(meta)}`;
 };
 
-// 로그 전체 생성
-const lines = [];
-perDayCounts.forEach((count, offset) => {
-  const date = dayjs()
-    .subtract(TOTAL_DAYS - offset, 'day')
-    .format('YYYYMMDD');
-  for (let i = 0; i < count; i++) {
-    lines.push(genLogLine(date, i));
-  }
-});
+// 파일명: YYYYMMDD_HHmm_slot.log
+function getFileName(ts) {
+  const sec = ts.second();
+  const slot = sec < 20 ? '00' : sec < 40 ? '20' : '40';
+  return `${ts.format('YYYYMMDD_HHmm')}_${slot}.log`;
+}
 
-fs.writeFileSync(LOG_FILE, lines.join('\n'), 'utf-8');
+function writeLogFile() {
+  const now = dayjs();
+  const sec = now.second();
+  const slotStartSec = sec < 20 ? 0 : sec < 40 ? 20 : 40;
+  const slotEndSec = slotStartSec + 19; // 예: 0~19, 20~39, 40~59
+
+  const base = 200;
+  const variance = Math.floor(base * 0.3);
+  const lineCount = base + Math.floor((Math.random() - 0.5) * variance * 2);
+
+  const lines = [];
+  for (let i = 0; i < lineCount; i++) {
+    // 각 라인의 시간은 해당 구간에서 랜덤
+    const ts = now
+      .second(slotStartSec + Math.floor(Math.random() * (slotEndSec - slotStartSec + 1)))
+      .millisecond(Math.floor(Math.random() * 1000));
+    lines.push(genLogLine(ts, i));
+  }
+
+  // 시간 순서대로 정렬 (로그다운 느낌)
+  lines.sort();
+
+  const filename = getFileName(now);
+  const filePath = path.join(OUT_DIR, filename);
+  fs.writeFileSync(filePath, lines.join('\n'), 'utf-8');
+  console.log(`[GEN] ${filename} (${lineCount} lines)`);
+}
+
+// 다음 slot까지 대기 후 시작
+function scheduleNext() {
+  const now = dayjs();
+  const nextSec = Math.ceil(now.second() / 20) * 20;
+  const next = now.second(nextSec).millisecond(0);
+  const delay = next.diff(now);
+
+  setTimeout(() => {
+    writeLogFile();
+    setInterval(writeLogFile, 20 * 1000);
+  }, delay);
+}
+
+scheduleNext();

@@ -1,11 +1,13 @@
 import { Module } from '@nestjs/common';
 import { Api3011Port } from './apis/api-3011/api-3011-port';
 import { WinstonLoggerSource } from './log-files/winston-logger-source';
+import { ManagerModule } from './lock-manager/manager.module';
 
 export const DATA_SOURCES = Symbol('DATA_SOURCES');
 
 @Module({
   providers: [
+    ManagerModule,
     Api3011Port,
     WinstonLoggerSource,
     {

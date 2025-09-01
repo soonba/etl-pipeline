@@ -1,38 +1,38 @@
 import { Injectable } from '@nestjs/common';
 import { DataSource } from '../../data-source';
-import { DataEntity } from '../../../../domain/data.entity';
-import { catchError, delay, EMPTY, finalize, from, Observable } from 'rxjs';
+import { catchError, concatMap, delay, EMPTY, from, range, switchMap } from 'rxjs';
 import axios from 'axios';
 import { Api3011Response } from './api-3011.response';
-import { mergeMap } from 'rxjs/operators';
 import { getDelayInMs } from '../rate-limit.util';
+import { mergeMap } from 'rxjs/operators';
 import { mapToEntity } from './map-to-entity';
 
 @Injectable()
 export class Api3011Port implements DataSource {
+  private readonly KEY = 'api-3011';
   private readonly BASE_URL = 'http://localhost:3011';
   private readonly MAXIMUM_REQUEST_PER_SECOND = 1;
 
-  //todo: 확장시 별도 db로 분리
-  private lastPage = 1;
-
-  fetch$(): Observable<DataEntity> {
-    return from(axios.get<Api3011Response>(this.BASE_URL, { params: { page: this.lastPage } })).pipe(
-      delay(getDelayInMs(this.MAXIMUM_REQUEST_PER_SECOND)),
-      mergeMap((res) => {
-        const { maxPage, data } = res.data;
-        if (this.lastPage >= maxPage) {
-          return EMPTY;
-        }
-        this.lastPage++;
-        return from(data.map((item) => mapToEntity(item)));
+  fetch$(lastPage: number) {
+    return from(axios.get<Api3011Response>(this.BASE_URL, { params: { page: lastPage } })).pipe(
+      switchMap(({ data: { maxPage } }) => {
+        console.log('이번 대상', lastPage, ' ', maxPage - lastPage);
+        return range(lastPage, maxPage - lastPage).pipe(
+          concatMap((page) =>
+            from(axios.get<Api3011Response>(this.BASE_URL, { params: { page } })).pipe(
+              delay(getDelayInMs(this.MAXIMUM_REQUEST_PER_SECOND)),
+              mergeMap(({ data: { data: fetched } }) => fetched.map((fetch) => mapToEntity(this.KEY, fetch))),
+              catchError((err) => {
+                console.error(err);
+                return EMPTY;
+              }),
+            ),
+          ),
+        );
       }),
-      catchError((err) => {
-        //todo: logger 통해서 남기도록 수정
-        console.log(`페이지 ${this.lastPage} fetch 에러`, err);
-        return EMPTY;
-      }),
-      finalize(() => {}),
     );
+  }
+  getKey(): string {
+    return this.KEY;
   }
 }

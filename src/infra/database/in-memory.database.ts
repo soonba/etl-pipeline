@@ -7,10 +7,10 @@ export class InMemoryDatabase implements DataRepository {
   save(data: DataEntity | DataEntity[]): Promise<void> {
     if (Array.isArray(data)) {
       this.dataDb.push(...data);
-      console.log(`source ${data[0].source} length ${data.length} inserted`);
+      console.log(`source ${data[0].key} length ${data.length} inserted`);
     } else {
       this.dataDb.push(data);
-      console.log(`source ${data.source} inserted`);
+      console.log(`source ${data.key} inserted`);
     }
     return Promise.resolve();
   }

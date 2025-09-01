@@ -1,9 +1,10 @@
 import { LogLevel } from './vo/log-level';
 
 export class DataEntity {
-  source: string;
+  key: string;
   level: LogLevel;
   message: string;
+  currentPatched: number;
   timestamp?: Date | null;
   errorId?: string | null;
 }
