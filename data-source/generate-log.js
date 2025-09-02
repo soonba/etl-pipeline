@@ -8,7 +8,6 @@ if (!fs.existsSync(OUT_DIR)) fs.mkdirSync(OUT_DIR);
 const LEVELS = ['info', 'warn'];
 let globalIdx = 1;
 
-// invalid 패턴 후보
 const INVALID_PATTERNS = [
   (ts, level, msg, meta) => `${ts.format('YYYYMMDD HH:mm:ss')} ${level} ${msg} ${JSON.stringify(meta)}`,
   (ts, level, msg, meta) => `${ts.format('YYYYMMDD-HHmmss')}::${level} ${msg} ${JSON.stringify(meta)}`,
@@ -36,7 +35,7 @@ const genLogLine = (ts, i) => {
     return pattern(ts, level, msg, meta);
   }
 
-  return `${ts.format('YYYYMMDD HH:mm:ss')} ${level}: ${msg} ${JSON.stringify(meta)}`;
+  return `${ts.format('YYYY-MM-DD HH:mm:ss.SSS')} ${level}: ${msg} ${JSON.stringify(meta)}`;
 };
 
 // 파일명: YYYYMMDD_HHmm_slot.log
@@ -52,7 +51,7 @@ function writeLogFile() {
   const slotStartSec = sec < 20 ? 0 : sec < 40 ? 20 : 40;
   const slotEndSec = slotStartSec + 19; // 예: 0~19, 20~39, 40~59
 
-  const base = 200;
+  const base = 30;
   const variance = Math.floor(base * 0.3);
   const lineCount = base + Math.floor((Math.random() - 0.5) * variance * 2);
 
