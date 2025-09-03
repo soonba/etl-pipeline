@@ -35,7 +35,7 @@ export class WinstonLoggerSource implements DataSource {
     if (files.length > 0) {
       await lastValueFrom(
         from(files).pipe(
-          mergeMap((file) => this.readFile$(file), 5),
+          mergeMap((file) => this.doProcess$(file), 5),
           bufferCount(100),
           mergeMap(async (raw) => await this.dataRepository.save(raw)),
         ),
@@ -45,7 +45,7 @@ export class WinstonLoggerSource implements DataSource {
     return;
   }
 
-  private readFile$(file: string): Observable<DataEntity> {
+  private doProcess$(file: string): Observable<DataEntity> {
     return new Observable<DataEntity>((subscriber) => {
       const readStream = fs.createReadStream(file).pipe(split2());
 
