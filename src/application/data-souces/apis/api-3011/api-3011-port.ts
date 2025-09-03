@@ -38,17 +38,15 @@ export class Api3011Port implements DataSource {
       const { maxPage } = resData;
       let buffer: DataEntity[] = [];
       for (let i = lastPage; i < maxPage; i++) {
-        console.log(i + '번째 페이지로 돌아');
         await delay(this.MAXIMUM_REQUEST_PER_SECOND);
         const { data: resData } = await axios.get<Api3011Response>(this.BASE_URL, { params: { page: i } });
         buffer.push(...resData.data.map((datum) => mapToEntity(this.KEY, datum)));
-        if (buffer.length >= 100) {
+        if (buffer.length >= 100 || i === maxPage - 1) {
           await this.dataRepository.save(buffer);
           buffer = [];
         }
         lastSaved = i + 1;
       }
-      await this.dataRepository.save(buffer);
     } catch (err) {
       this.logger.error(`collect error for ${this.KEY}`, err);
     } finally {

@@ -8,7 +8,6 @@ export class CollectDataJob {
 
   @Cron('*/5 * * * * *')
   async run(): Promise<void> {
-    console.log('trigger');
     return await this.collectDataUseCase.collect();
   }
 }
