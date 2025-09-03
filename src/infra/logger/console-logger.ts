@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { BatchLogger } from './batch-logger';
+import { BatchLogger } from '../../domain/logger/batch-logger';
 
 @Injectable()
 export class ConsoleLogger implements BatchLogger {

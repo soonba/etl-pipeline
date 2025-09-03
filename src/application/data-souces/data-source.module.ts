@@ -1,19 +1,18 @@
 import { Module } from '@nestjs/common';
 import { Api3011Port } from './apis/api-3011/api-3011-port';
 import { WinstonLoggerSource } from './log-files/winston-logger-source';
-import { InfraModule } from '../../infra/infra.module';
 import { DomainModule } from '../../domain/domain.module';
 
 export const DATA_SOURCES = Symbol('DATA_SOURCES');
 
 @Module({
-  imports: [InfraModule, DomainModule],
+  imports: [DomainModule],
   providers: [
     Api3011Port,
     WinstonLoggerSource,
     {
       provide: DATA_SOURCES,
-      useFactory: (a2: Api3011Port, w1: WinstonLoggerSource) => [a2, w1],
+      useFactory: (a1: Api3011Port, w1: WinstonLoggerSource) => [a1, w1],
       inject: [Api3011Port, WinstonLoggerSource],
     },
   ],
