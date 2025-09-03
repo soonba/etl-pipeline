@@ -7,7 +7,7 @@ const PAGE_SIZE = 20;
 const MAX_LOGS = 1000;
 
 const formatFn = (port) => (isError, idx) => ({
-  date: dayjs().format('YY-MM-DD HH:mm:SS'),
+  date: dayjs().toISOString(),
   status: isError ? 'FAIL' : 'SUCCESS',
   node: `node-${port}`,
   detail: isError ? `log-${idx} failed to process` : `log-${idx} processed successfully`,
