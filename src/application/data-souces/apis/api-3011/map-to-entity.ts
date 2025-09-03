@@ -11,10 +11,10 @@ export const mapStatusToLevel = (status: Api3011LogStatus): LogLevel => {
   }
 };
 
-export const mapToEntity = (api3011Data: Api3011Data): DataEntity => {
+export const mapToEntity = (key: string, api3011Data: Api3011Data): DataEntity => {
   const { date, status, node, detail } = api3011Data;
   return {
-    source: 'api-3011',
+    key,
     level: mapStatusToLevel(status),
     message: node + detail,
     timestamp: date ? dayjs(date).toDate() : null,

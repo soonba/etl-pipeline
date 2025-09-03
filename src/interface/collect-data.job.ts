@@ -1,14 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import { PipelineFacade } from '../application/pipeline-facade';
 import { Cron } from '@nestjs/schedule';
+import { CollectDataUseCase } from '../application/collect-data.use-case';
 
 @Injectable()
 export class CollectDataJob {
-  constructor(private readonly pipelineFacade: PipelineFacade) {}
+  constructor(private readonly collectDataUseCase: CollectDataUseCase) {}
 
   @Cron('*/5 * * * * *')
   async run(): Promise<void> {
-    console.log('trigger');
-    return await this.pipelineFacade.runPipeline();
+    return await this.collectDataUseCase.collect();
   }
 }
