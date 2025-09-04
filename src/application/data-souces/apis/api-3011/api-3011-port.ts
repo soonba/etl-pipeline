@@ -33,13 +33,23 @@ export class Api3011Port implements DataSource {
     }
     const lastPage = await this.lastPatchedManager.get(this.KEY);
     const response = await this.fetchPage(lastPage);
+
+    if (!response) {
+      this.logger.log(`skip datasource: ${this.KEY} (api server not working)`);
+      await this.lockManager.release(this.KEY);
+      return;
+    }
+
     const { maxPage } = response;
     const buffer = new Buffer<DataEntity>();
     for (let i = lastPage; i < maxPage; i++) {
       try {
         await delay(this.RATE_LIMIT_DELAY);
-        const { data } = await this.fetchPage(i);
-        const dataEntities = data.map((datum) => mapToEntity(this.KEY, datum));
+        const result = await this.fetchPage(i);
+        if (!result) {
+          throw Error();
+        }
+        const dataEntities = result.data.map((datum) => mapToEntity(this.KEY, datum));
         const pushed = buffer.push(dataEntities);
         if (pushed) {
           await this.dataRepository.save(pushed);
@@ -56,8 +66,11 @@ export class Api3011Port implements DataSource {
     return;
   }
 
-  private async fetchPage(page: number) {
-    const { data } = await axios.get<Api3011Response>(this.BASE_URL, { params: { page } });
-    return data;
+  private async fetchPage(page: number): Promise<Api3011Response | null> {
+    try {
+      return (await axios.get<Api3011Response>(this.BASE_URL, { params: { page } })).data;
+    } catch {
+      return null;
+    }
   }
 }

@@ -1,21 +1,18 @@
-import { DataRepository } from '../../domain/repository/data.repository';
 import { DataEntity } from '../../domain/data.entity';
+import { DataRepository } from '../../domain/repository/data.repository';
 
 export class InMemoryDatabase implements DataRepository {
   private readonly dataDb = [] as DataEntity[];
 
-  save(data: DataEntity | DataEntity[]): Promise<void> {
-    if (Array.isArray(data)) {
+  async save(data: DataEntity[]): Promise<void> {
+    if (data.length > 0) {
       this.dataDb.push(...data);
       console.log(`source ${data[0]?.key} length ${data.length} inserted`);
-    } else {
-      this.dataDb.push(data);
-      console.log(`source ${data.key} inserted`);
     }
-    return Promise.resolve();
+    return;
   }
 
-  findAll(): Promise<DataEntity[]> {
-    return Promise.resolve(this.dataDb);
+  async findAll(): Promise<DataEntity[]> {
+    return this.dataDb;
   }
 }
